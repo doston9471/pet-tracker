@@ -22,7 +22,7 @@ RSpec.describe 'Pets API', type: :request do
     end
   end
 
-  describe 'POST /pets' do
+  describe 'POST /api/pets' do
     let(:valid_cat_params) do
       {
         pet: {
@@ -65,10 +65,10 @@ RSpec.describe 'Pets API', type: :request do
     end
   end
 
-  describe 'GET /pets/outside_zone' do
-    let!(:cat_outside) { Pet.create!(pet_type: 'Cat', tracker_type: 'small', owner_id: 1, in_zone: false, lost_tracker: true) }
+  describe 'GET /api/pets/outside_zone' do
+    let!(:cat_outside) { Pet.create!(pet_type: 'Cat', tracker_type: 'small', owner_id: 1, in_zone: false, lost_tracker: false) }
     let!(:dog_outside) { Pet.create!(pet_type: 'Dog', tracker_type: 'big', owner_id: 2, in_zone: false) }
-    let!(:cat_inside) { Pet.create!(pet_type: 'Cat', tracker_type: 'big', owner_id: 3, in_zone: true, lost_tracker: false) }
+    let!(:cat_inside) { Pet.create!(pet_type: 'Cat', tracker_type: 'big', owner_id: 3, in_zone: true, lost_tracker: true) }
 
     before { get '/api/pets/outside_zone' }
 
@@ -81,6 +81,29 @@ RSpec.describe 'Pets API', type: :request do
         'Cat' => { 'small' => 1 },
         'Dog' => { 'big' => 1 }
       })
+    end
+  end
+
+  describe 'GET /api/pets/:id' do
+    let!(:cat) { Pet.create!(pet_type: 'Dog', tracker_type: 'small', owner_id: 1, in_zone: false) }
+
+    context 'when the pet exists' do
+      before { get "/api/pets/#{cat.id}" }
+
+      it 'returns the pet details' do
+        expect(response).to have_http_status(:success)
+        expect(json['pet_type']).to eq('Dog')
+        expect(json['tracker_type']).to eq('small')
+      end
+    end
+
+    context 'when the pet does not exist' do
+      before { get '/api/pets/99999' }  # Use a non-existent pet ID
+
+      it 'returns a not found error' do
+        expect(response).to have_http_status(:not_found)
+        expect(json['error']).to eq('Pet not found')
+      end
     end
   end
 

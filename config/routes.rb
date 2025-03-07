@@ -8,7 +8,10 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   # root "posts#index"
   namespace :api do
-    resources :pets, only: [ :index, :create, :show ]
-    get "pets/outside_zone", to: "pets#outside_zone"
+    resources :pets, only: [ :index, :create, :show ] do
+      collection do
+        get :outside_zone
+      end
+    end
   end
 end

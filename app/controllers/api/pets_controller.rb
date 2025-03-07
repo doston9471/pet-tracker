@@ -4,6 +4,13 @@ class Api::PetsController < ApplicationController
     render json: @pets
   end
 
+  def show
+    @pet = Pet.find(params[:id])
+    render json: @pet
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Pet not found" }, status: :not_found
+  end
+
   def create
     @pet = Pet.new(pet_params)
     if @pet.save
@@ -15,11 +22,14 @@ class Api::PetsController < ApplicationController
 
   def outside_zone
     count = Pet.where(in_zone: false).group(:pet_type, :tracker_type).count
-    formatted_count = count.each_with_object({}) do |((pet_type, tracker_type), value), hash|
-      hash[pet_type] ||= {}
-      hash[pet_type][tracker_type] = value
+    result = {}
+
+    count.each do |(pet_type, tracker_type), count_value|
+      result[pet_type] ||= {}
+      result[pet_type][tracker_type] = count_value
     end
-    render json: formatted_count
+
+    render json: result
   end
 
   private
