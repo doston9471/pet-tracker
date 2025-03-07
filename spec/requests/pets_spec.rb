@@ -1,29 +1,50 @@
 require 'rails_helper'
 
 RSpec.describe 'Pets API', type: :request do
-  let(:valid_cat_params) do
-    {
-      pet: {
-        pet_type: 'Cat',
-        tracker_type: 'big',
-        owner_id: 1,
-        in_zone: false,
-        lost_tracker: false
-      }
-    }
+  let!(:pets) do
+    [
+      Pet.create!(pet_type: 'Cat', tracker_type: 'small', owner_id: 1, in_zone: false, lost_tracker: false),
+      Pet.create!(pet_type: 'Dog', tracker_type: 'big', owner_id: 2, in_zone: true)
+    ]
   end
 
-  let(:invalid_params) do
-    {
-      pet: {
-        pet_type: 'Fish', # Invalid type
-        tracker_type: 'xl',
-        owner_id: 'abc'
-      }
-    }
+  describe 'GET /api/pets' do
+    before { get '/api/pets' }
+
+    it 'returns a success response' do
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'returns all pets' do
+      expect(json.size).to eq(2)
+      expect(json[0]['pet_type']).to eq('Cat')
+      expect(json[1]['pet_type']).to eq('Dog')
+    end
   end
 
   describe 'POST /pets' do
+    let(:valid_cat_params) do
+      {
+        pet: {
+          pet_type: 'Cat',
+          tracker_type: 'big',
+          owner_id: 1,
+          in_zone: false,
+          lost_tracker: false
+        }
+      }
+    end
+
+    let(:invalid_params) do
+      {
+        pet: {
+          pet_type: 'Fish', # Invalid type
+          tracker_type: 'xl',
+          owner_id: 'abc'
+        }
+      }
+    end
+
     context 'with valid parameters' do
       before { post '/api/pets', params: valid_cat_params }
 

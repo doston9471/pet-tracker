@@ -9,6 +9,20 @@ abort("The Rails environment is running in production mode!") if Rails.env.produ
 # return unless Rails.env.test?
 require 'rspec/rails'
 # Add additional requires below this line. Rails is not loaded until this point!
+require 'simplecov'
+require 'simplecov-json'
+SimpleCov.start 'rails' do
+  add_filter '/bin/'
+  add_filter '/db/'
+  add_filter '/spec/'
+
+  # Add JSON formatter for Codecov
+  formatters = [
+    SimpleCov::Formatter::HTMLFormatter,
+    SimpleCov::Formatter::JSONFormatter
+  ]
+  formatter SimpleCov::Formatter::MultiFormatter.new(formatters)
+end
 
 Shoulda::Matchers.configure do |config|
   config.integrate do |with|
