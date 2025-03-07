@@ -10,7 +10,6 @@ class Pet < ApplicationRecord
   private
 
   def validate_tracker_type
-
     case pet_type
     when "Cat"
       errors.add(:tracker_type, "must be small or big for Cats") unless %w[small big].include?(tracker_type)

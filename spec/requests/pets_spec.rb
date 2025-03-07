@@ -1,14 +1,14 @@
 require 'rails_helper'
 
 RSpec.describe 'Pets API', type: :request do
-  let!(:pets) do
-    [
-      Pet.create!(pet_type: 'Cat', tracker_type: 'small', owner_id: 1, in_zone: false, lost_tracker: false),
-      Pet.create!(pet_type: 'Dog', tracker_type: 'big', owner_id: 2, in_zone: true)
-    ]
-  end
-
   describe 'GET /api/pets' do
+    let!(:pets) do
+      [
+        Pet.create!(pet_type: 'Cat', tracker_type: 'small', owner_id: 1, in_zone: false, lost_tracker: false),
+        Pet.create!(pet_type: 'Dog', tracker_type: 'big', owner_id: 2, in_zone: true)
+      ]
+    end
+
     before { get '/api/pets' }
 
     it 'returns a success response' do
@@ -62,6 +62,25 @@ RSpec.describe 'Pets API', type: :request do
         expect(json['pet_type']).to include('is not included in the list')
         expect(json['tracker_type']).to be_present
       end
+    end
+  end
+
+  describe 'GET /pets/outside_zone' do
+    let!(:cat_outside) { Pet.create!(pet_type: 'Cat', tracker_type: 'small', owner_id: 1, in_zone: false, lost_tracker: true) }
+    let!(:dog_outside) { Pet.create!(pet_type: 'Dog', tracker_type: 'big', owner_id: 2, in_zone: false) }
+    let!(:cat_inside) { Pet.create!(pet_type: 'Cat', tracker_type: 'big', owner_id: 3, in_zone: true, lost_tracker: false) }
+
+    before { get '/api/pets/outside_zone' }
+
+    it 'returns a success response' do
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'returns a count of pets outside the zone grouped by pet_type and tracker_type' do
+      expect(json).to eq({
+        'Cat' => { 'small' => 1 },
+        'Dog' => { 'big' => 1 }
+      })
     end
   end
 

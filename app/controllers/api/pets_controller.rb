@@ -13,6 +13,15 @@ class Api::PetsController < ApplicationController
     end
   end
 
+  def outside_zone
+    count = Pet.where(in_zone: false).group(:pet_type, :tracker_type).count
+    formatted_count = count.each_with_object({}) do |((pet_type, tracker_type), value), hash|
+      hash[pet_type] ||= {}
+      hash[pet_type][tracker_type] = value
+    end
+    render json: formatted_count
+  end
+
   private
 
   def pet_params
